@@ -106,7 +106,8 @@ minutes_per_day = minutes_per_day + fractionPerWorkingDay * 7.5 * 60
 
 async function runner(fn, id, options) {
   try {
-    await fn(id, options);
+    const data = await fn(id, options);
+    console.log(data);
   }
   catch (error) {
     console.error(error);

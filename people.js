@@ -5,110 +5,117 @@ const confdir = require('os').homedir() + "/.config/runnio-cli/"
 const CONFIG_FILE = confdir + 'config.json';
 
 
-function fetchPeoplePage(params, apiKey) {
+
+
+async function fetchPeoplePage(params, apiKey) {
     const baseUrl = 'https://app.runn.io/api/v0';
 
-    return axios.get(`${baseUrl}/people`, {
-        headers: {
-            Authorization: `Bearer ${apiKey}`,
-        },
-        params: params,
-    })
-        .then(response => response.data)
-        .catch(error => {
-            throw error;
+    try {
+        const response = await axios.get(`${baseUrl}/people`, {
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+            },
+            params: params,
         });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
 }
 
-function fetchPeople(apiKey, options) {
+
+async function fetchPeople(apiKey, options) {
     let currentPage = 1;
-    params = {}
+    const params = {};
     if (options.perpage) {
-        params.perpage = options.perpage
+        params.perpage = options.perpage;
     }
     if (options.include_placeholders) {
-        params.include_placeholders = options.include_placeholders
+        params.include_placeholders = options.include_placeholders;
     }
     if (options.include_projects) {
-        params.include_projects = options.include_projects
-    }
-    if (options.include_archived) {
-        params.include_archived = options.include_archived
+        params.include_projects = options.include_projects;
     }
 
+    const fetchedPeople = [];
 
-    const fetchNextPage = () => {
-        params.page = currentPage
-        fetchPeoplePage(params, apiKey)
-            .then(response => {
-                console.log(response); // Handle the data as needed
-
-                if (response.next) {
-                    currentPage++; // Move to the next page
-                    fetchNextPage(); // Fetch the next page
-                }
-            })
-            .catch(error => {
-                console.error('An error occurred:', error);
-            });
+    const fetchNextPage = async () => {
+        params.page = currentPage;
+        try {
+            const response = await fetchPeoplePage(params, apiKey);
+            fetchedPeople.push(...response); // Accumulate fetched people
+            if (response.next) {
+                currentPage++;
+                await fetchNextPage();
+            }
+        } catch (error) {
+            console.error('An error occurred:', error);
+        }
     };
 
-    fetchNextPage(); // Start fetching pages
+    await fetchNextPage();
+    return fetchedPeople;
 }
 
 
-function fetchPeopleById(apiKey, options, id) {
-    let params = {}
-    if (options.start) {
-        params.start = options.start
-    }
-    if (options.end) {
-        params.end = options.end
-    }
-    if (options.include_assignments) {
-        params.include_assignments = options.include_assignments
-    }
+
+async function fetchpeopleById(apiKey, options, id) {
+    const params = {};
+
     if (options.include_actuals) {
-        params.include_actuals = options.include_actuals
+        params.include_actuals = options.include_actuals;
     }
-    const baseUrl = `https://app.runn.io/api/v0/`;
 
-    return axios.get(`${baseUrl}/people/${id}`, {
-        headers: {
-            Authorization: `Bearer ${apiKey}`,
-        },
-        params: params,
-    })
-        .then(response => {
-            console.log(response.data);
-        })
-        .catch(error => {
-            throw error;
+    if (options.include_assignments) {
+        params.include_assignments = options.include_assignments;
+    }
+
+    if (options.start) {
+        params.start = options.start;
+    }
+
+    if (options.end) {
+        params.end = options.end;
+    }
+
+    const baseUrl = `https://app.runn.io/api/v0/`;
+    try {
+        const response = await axios.get(`${baseUrl}/people/${id}`, {
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+            },
+            params: params,
         });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
 }
 
-
-
-
-function people(id, options) {
+async function people(id, options) {
     try {
-        fs.readFile(CONFIG_FILE, 'utf8', (err, data) => {
-            if (err) {
-                console.error('Error reading the file:', err);
-                return;
-            }
-            const config = JSON.parse(data);
-            if (id.length > 0) {
-                for (let i = 0; i < id.length; i++)
-                    fetchPeopleById(config.apikey, options, id[i]);
-            }
-            else
-                fetchPeople(config.apikey, options);
+        const configData = await fs.promises.readFile(CONFIG_FILE, 'utf8');
+        const config = JSON.parse(configData);
+        
+        const fetchedPeople = [];
 
-        });
+        if (id.length > 0) {
+            for (let i = 0; i < id.length; i++) {
+
+                const fetchedProject = await fetchpeopleById(config.apikey, options, id[i]);
+                fetchedPeople.push(fetchedProject);
+            }
+        } else {
+            const people = await fetchPeople(config.apikey, options);
+            fetchedPeople.push(...people);
+        }
+        return fetchedPeople;
     } catch (error) {
         console.error('An error occurred:', error);
+        throw error; 
     }
 }
+
+
 
 module.exports = people;
