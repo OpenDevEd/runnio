@@ -3,6 +3,7 @@ ARCHIVE
 file.txt
 *~
 template.json
+config.json
 
 # Logs
 logs
