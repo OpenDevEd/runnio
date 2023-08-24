@@ -2,6 +2,7 @@
 // https://developers.notion.com/reference/
 const people = require('./people');
 const projects = require('./projects');
+const actuals = require('./actual');
 
 
 process.on('uncaughtException', (error) => {
@@ -54,20 +55,36 @@ program
     runner(people, id, options)
   });
 
-program
-  .command('projects [id...]')
-  .description('List of projects. Access to GET /v0/projects and GET /v0/projects/id')
-  .option('--no_include_archived', 'Default value : false', false)
-  .option('--per_page <number>', 'Number of items to return per page. Maximum value: 200. Default: 200', 200)
-  .option('--page <offset>', 'Page offset to fetch. Default value : 1', 1)
-  .option('--allpages', 'Fetch all pages.', false)
-  .option('--include_assignments', 'Include assignments. Only works if id is speccified.', false)
-  .option('--include_actuals', 'Include actuals. Only works if id is speccified.', false)
-  .option('--start <string>', 'Include only Assignments + Actuals on or after date (YYYY-MM-DD)')
-  .option('--end <string>', 'Include only Assignments + Actuals on or before date (YYYY-MM-DD)')
-  .action(async (id, options) => {
-    runner(projects, id, options)
-  });
+  program
+    .command('projects [id...]')
+    .description('List of projects. Access to GET /v0/projects and GET /v0/projects/id')
+    .option('--no_include_archived', 'Default value : false', false)
+    .option('--per_page <number>', 'Number of items to return per page. Maximum value: 200. Default: 200', 200)
+    .option('--page <offset>', 'Page offset to fetch. Default value : 1', 1)
+    .option('--allpages', 'Fetch all pages.', false)
+    .option('--include_assignments', 'Include assignments. Only works if id is speccified.', false)
+    .option('--include_actuals', 'Include actuals. Only works if id is speccified.', false)
+    .option('--start <string>', 'Include only Assignments + Actuals on or after date (YYYY-MM-DD)')
+    .option('--end <string>', 'Include only Assignments + Actuals on or before date (YYYY-MM-DD)')
+    .action(async (id, options) => {
+      runner(projects, id, options)
+    });
+  
+  program
+    .command('actuals [id...]')
+    .description('List of actuals. Access to GET /v0/actuals and GET /v0/actuals/id')
+    .option('--per_page <number>', 'Number of items to return per page. Maximum value: 200. Default: 200', 200)
+    .option('--page <offset>', 'Page offset to fetch. Default value: 1', 0)
+    .option('--allpages', 'Fetch all pages.', false)
+    .requiredOption('--start <string>', 'Include only actuals on or after date (YYYY-MM-DD)')
+    .option('--end <string>', 'Include only actuals on or before date (YYYY-MM-DD)')
+    .action(async (id, options) => {
+      runner(actuals, id, options)
+    });
+  
+
+
+
 program.parse(process.argv);
 
 // actuals
@@ -107,7 +124,7 @@ minutes_per_day = minutes_per_day + fractionPerWorkingDay * 7.5 * 60
 async function runner(fn, id, options) {
   try {
     const data = await fn(id, options);
-    console.log(data);
+    console.log(data.length);
   }
   catch (error) {
     console.error(error);

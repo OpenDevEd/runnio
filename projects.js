@@ -28,6 +28,7 @@ async function fetchProjects(apiKey, options) {
     let currentPage = 1;
     const params = {};
     if (options.perpage) {
+        console.log("perpage");
         params.perpage = options.perpage;
     }
     options.no_include_archived ? (params.include_archived = false) : (params.include_archived = true);
