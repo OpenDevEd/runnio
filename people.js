@@ -45,8 +45,6 @@ function fetchPeople(apiKey, options) {
 
                 if (response.next) {
                     currentPage++; // Move to the next page
-                    if (options.page)
-                        return
                     fetchNextPage(); // Fetch the next page
                 }
             })
@@ -64,18 +62,14 @@ function fetchPeopleById(apiKey, options, id) {
     if (options.start) {
         params.start = options.start
     }
-
     if (options.end) {
         params.end = options.end
     }
-
     if (options.include_assignments) {
         params.include_assignments = options.include_assignments
     }
-
     if (options.include_actuals) {
         params.include_actuals = options.include_actuals
-        console.log(params.include_actuals)
     }
     const baseUrl = `https://app.runn.io/api/v0/`;
 
@@ -109,7 +103,7 @@ function people(id, options) {
                     fetchPeopleById(config.apikey, options, id[i]);
             }
             else
-                fetchPeople(config.apikey, options, id);
+                fetchPeople(config.apikey, options);
 
         });
     } catch (error) {

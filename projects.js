@@ -26,13 +26,6 @@ function fetchProjects(apiKey, options) {
     if (options.perpage) {
         params.perpage = options.perpage
     }
-    if (options.include_placeholders) {
-        params.include_placeholders = options.include_placeholders
-    }
-    if (options.include_projects) {
-        params.include_projects = options.include_projects
-    }
-
     options.no_include_archived? params.include_archived = false : params.include_archived = true
 
 
@@ -62,15 +55,21 @@ function fetchprojectById(apiKey, options, id) {
     let params = {}
     options.no_include_archived? params.include_archived = false : params.include_archived = true
     
-    if (options.perpage) {
-        params.perpage = options.perpage
+    if (options.include_assignments) {
+        params.include_assignments = options.include_assignments
     }
     
-    if (options.page) {
-        params.page = options.page
+    if (options.include_actuals) {
+        params.include_actuals = options.include_actuals
+    }
+    if (options.start) {
+        params.start = options.start
+    }
+    
+    if (options.end) {
+        params.end = options.end
     }
     const baseUrl = `https://app.runn.io/api/v0/`;
-
     return axios.get(`${baseUrl}/projects/${id}`, {
         headers: {
             Authorization: `Bearer ${apiKey}`,

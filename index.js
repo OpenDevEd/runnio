@@ -63,8 +63,8 @@ program
   .option('--allpages', 'Fetch all pages.', false)
   .option('--include_assignments', 'Include assignments. Only works if id is speccified.', false)
   .option('--include_actuals', 'Include actuals. Only works if id is speccified.', false)
-  .option('--start ', 'Include only Assignments + Actuals on or after date (YYYY-MM-DD)')
-  .option('--end', 'Include only Assignments + Actuals on or before date (YYYY-MM-DD)')
+  .option('--start <string>', 'Include only Assignments + Actuals on or after date (YYYY-MM-DD)')
+  .option('--end <string>', 'Include only Assignments + Actuals on or before date (YYYY-MM-DD)')
   .action(async (id, options) => {
     runner(projects, id, options)
   });
