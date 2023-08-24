@@ -1,9 +1,6 @@
 
 const axios = require('axios');
 const fs = require('fs');
-const confdir = require('os').homedir() + "/.config/runnio-cli/"
-const CONFIG_FILE = confdir + 'config.json';
-
 
 
 
@@ -92,11 +89,8 @@ async function fetchpeopleById(apiKey, options, id) {
     }
 }
 
-async function people(id, options) {
-    try {
-        const configData = await fs.promises.readFile(CONFIG_FILE, 'utf8');
-        const config = JSON.parse(configData);
-        
+async function people(id, options, config) {
+    try {        
         const fetchedPeople = [];
 
         if (id.length > 0) {

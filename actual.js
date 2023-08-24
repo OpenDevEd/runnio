@@ -1,15 +1,8 @@
-
-
-
-
+// actuals
+// time_entry
 
 const axios = require('axios');
 const fs = require('fs');
-const confdir = require('os').homedir() + "/.config/runnio-cli/"
-const CONFIG_FILE = confdir + 'config.json';
-
-
-
 
 async function fetchActualPage(params, apiKey) {
     const baseUrl = 'https://app.runn.io/api/v0';
@@ -71,10 +64,8 @@ async function fetchActual(apiKey, options) {
 
 
 
-async function actual(id, options) {
+async function actuals(id, options, config) {
     try {
-        const configData = await fs.promises.readFile(CONFIG_FILE, 'utf8');
-        const config = JSON.parse(configData);    
         const fetchedactual = await fetchActual(config.apikey, options);
         
         return fetchedactual;
@@ -85,4 +76,4 @@ async function actual(id, options) {
 }
 
 
-module.exports = actual;
+module.exports = actuals;
