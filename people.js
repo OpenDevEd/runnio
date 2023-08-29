@@ -24,8 +24,8 @@ async function fetchPeoplePage(params, apiKey) {
 async function fetchPeople(apiKey, options) {
     let currentPage = 1;
     const params = {};
-    if (options.perpage) {
-        params.perpage = options.perpage;
+    if (options.per_page) {
+        params.per_page = options.per_page;
     }
     if (options.include_placeholders) {
         params.include_placeholders = options.include_placeholders;
@@ -35,21 +35,28 @@ async function fetchPeople(apiKey, options) {
     }
 
     const fetchedPeople = [];
-
+    let dateOfRun = new Date();
     const fetchNextPage = async () => {
         params.page = currentPage;
         try {
+            // console.log("currentPage",currentPage);
             const response = await fetchPeoplePage(params, apiKey);
-            fetchedPeople.push(...response); // Accumulate fetched people
-            if (response.next) {
+            fetchedPeople.push(...response);
+            if (response.length > 0) {
                 currentPage++;
+                if (currentPage % 120 == 0) {
+                    const SecondToComplteMinute = 60000 - (new Date().getTime() / 1000 - dateOfRun.getTime() / 1000);
+                    if (SecondToComplteMinute > 0) {
+                        await new Promise(resolve => setTimeout(resolve, SecondToComplteMinute));
+                    }
+                    dateOfRun = new Date();
+                }
                 await fetchNextPage();
             }
         } catch (error) {
             console.error('An error occurred:', error);
         }
     };
-
     await fetchNextPage();
     return fetchedPeople;
 }

@@ -2,7 +2,9 @@
 // https://developers.notion.com/reference/
 const people = require('./people');
 const projects = require('./projects');
-const actuals = require('./actual');
+const assignments = require('./assignments');
+const actuals = require('./actuals');
+const report = require('./report');
 
 
 process.on('uncaughtException', (error) => {
@@ -84,6 +86,22 @@ program
 
   program
   .command('assignments [id...]')
+  .option('--get', 'Get assignments')
+  .option('--post', 'Post assignments')
+  .option('--delete', 'Delete assignments')
+  .option('--allpages', 'Fetch all pages.', false)
+  .option('--page <offset>', 'Page offset to fetch. Default value: 1', 0)
+  .option('--project_id <projectId>', 'Identifier for the project')
+  .option('--person_id <personId>', 'Identifier for the person or team member')
+  .option('--role_id <roleId>', 'Identifier for the role')
+  .option('--start_date <startDate>', 'Starting date of the task or project phase')
+  .option('--end_date <endDate>', 'Ending date of the task or project phase')
+  .option('--minutes_per_day <minutesPerDay>', 'Number of minutes allocated per day', 0)
+  .option('--totaldays <totaldays>', 'Number of days allocated for the task or project phase',0)
+  .option('--is-billable <isBillable>', 'Indicates if task is billable', /^(true|false)$/i, true)
+  .option('--note <note>', 'Additional notes or comments')
+  .option('--phase_id <phaseId>', 'Identifier for a specific phase')
+  .option('--non_working_day', 'Set to true for non-working day', /^(true|false)$/i, false)
   .action(async (id, options) => {
     runner(assignments, id, options)
   });
@@ -95,10 +113,14 @@ program
   });
 
 
+const globaloptions = program.opts();
 program.parse(process.argv);
-
+if (globaloptions.debug) console.log("arguments=" + JSON.stringify({
+  globaloptions: globaloptions
+}, null, 2))
 
 async function runner(fn, id, options) {
+
   try {
     const CONF = globaloptions.configfile ? globaloptions.configfile : CONFIG_FILE;
     if (!fs.existsSync(CONF)) {
@@ -114,12 +136,13 @@ async function runner(fn, id, options) {
 
   try {
     const data = await fn(id, options, config);
+    console.log("data :",data);
     //console.log(data.length);
-    if (globaloptions.csv) {
-      console.log("csv output not yet implemented.")
-    } else {
-      console.log(JSON.stringify(data, null, 2));
-    };
+    // if (globaloptions.csv) {
+    //   console.log("csv output not yet implemented.")
+    // } else {
+    //   console.log(JSON.stringify(data, null, 2));
+    // };
   }
   catch (error) {
     console.error(error);

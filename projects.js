@@ -24,28 +24,36 @@ async function fetchProjectsPage(params, apiKey) {
 async function fetchProjects(apiKey, options) {
     let currentPage = 1;
     const params = {};
-    if (options.perpage) {
-        console.log("perpage");
-        params.perpage = options.perpage;
+    if (options.per_page) {
+        console.log("per_page");
+        params.per_page = options.per_page;
     }
     options.no_include_archived ? (params.include_archived = false) : (params.include_archived = true);
 
     const fetchedProjects = [];
 
+    
+    let dateOfRun = new Date();
     const fetchNextPage = async () => {
         params.page = currentPage;
         try {
             const response = await fetchProjectsPage(params, apiKey);
-            fetchedProjects.push(...response); // Accumulate fetched projects
-            if (response.next) {
+            fetchedProjects.push(...response);
+            if (response.length > 0) {
                 currentPage++;
+                if (currentPage % 120 == 0) {
+                    const SecondToComplteMinute = 60000 - (new Date().getTime() / 1000 - dateOfRun.getTime() / 1000);
+                    if (SecondToComplteMinute > 0) {
+                        await new Promise(resolve => setTimeout(resolve, SecondToComplteMinute));
+                    }
+                    dateOfRun = new Date();
+                }
                 await fetchNextPage();
             }
         } catch (error) {
             console.error('An error occurred:', error);
         }
     };
-
     await fetchNextPage();
     return fetchedProjects;
 }
