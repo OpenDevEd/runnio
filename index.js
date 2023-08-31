@@ -5,6 +5,7 @@ const projects = require('./projects');
 const assignments = require('./assignments');
 const actuals = require('./actuals');
 const report = require('./report');
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 
 process.on('uncaughtException', (error) => {
@@ -137,6 +138,30 @@ async function runner(fn, id, options) {
   try {
     const data = await fn(id, options, config);
     console.log("data :",data);
+    
+// const data = [
+//   // ... the array of objects you provided ...
+// ];
+
+const csvWriter = createCsvWriter({
+  path: `${fn.name}.csv`,
+  header: Object.keys(data[0]).map(key => ({ id: key, title: key }))
+});
+const stringifiedData = data.map(obj => {
+  const stringifiedObj = {};
+  for (const key in obj) {
+    if (typeof obj[key] === 'object') {
+      stringifiedObj[key] = JSON.stringify(obj[key]);
+    } else {
+      stringifiedObj[key] = obj[key];
+    }
+  }
+  return stringifiedObj;
+});
+
+csvWriter
+  .writeRecords(stringifiedData)
+  .then(() => console.log('CSV file was written successfully.'));
     //console.log(data.length);
     // if (globaloptions.csv) {
     //   console.log("csv output not yet implemented.")
