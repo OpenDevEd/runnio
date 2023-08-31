@@ -142,12 +142,32 @@ async function runner(fn, id, options) {
 // const data = [
 //   // ... the array of objects you provided ...
 // ];
+let csvWriter=null;
+let stringifiedData =data;
+if(fn.name=="report")
+{
+   csvWriter = createCsvWriter({
+    path: `${fn.name}.csv`,    // Change this to the desired output file path
+    header: [
+      { id: 'name', title: 'Name' },
+      { id: 'hours', title: 'hours' }
+    ]
+  });
+  
+  const records = [];
+  for (const name in data) {
+    records.push({ name, hours: data[name] });
+  }
+  stringifiedData =records
+}
+else
+{
 
-const csvWriter = createCsvWriter({
+ csvWriter = createCsvWriter({
   path: `${fn.name}.csv`,
   header: Object.keys(data[0]).map(key => ({ id: key, title: key }))
 });
-const stringifiedData = data.map(obj => {
+ stringifiedData = data.map(obj => {
   const stringifiedObj = {};
   for (const key in obj) {
     if (typeof obj[key] === 'object') {
@@ -158,6 +178,7 @@ const stringifiedData = data.map(obj => {
   }
   return stringifiedObj;
 });
+}
 
 csvWriter
   .writeRecords(stringifiedData)

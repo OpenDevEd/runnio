@@ -133,6 +133,7 @@ async function report(id, options, config) {
 
     }
     console.log(report)
+    return report
 }
 
 module.exports = report;
