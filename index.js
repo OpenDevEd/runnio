@@ -5,6 +5,7 @@ const projects = require('./projects');
 const assignments = require('./assignments');
 const actuals = require('./actuals');
 const report = require('./report');
+const cronFunction = require('./cronFunction');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
 
@@ -107,13 +108,20 @@ program
     runner(assignments, id, options)
   });
 
-program
+  program
   .command('report [id...]')
   .option('--sendwarning', 'Send warning email to people who have not filled their timesheet')
   .option('--reportManager', 'Send report to manager')
   .action(async (id, options) => {
     runner(report, id, options)
   });
+
+  
+program
+.command('cron')
+.action(async (id, options) => {
+  runner(cronFunction, id, options)
+});
 
 
 const globaloptions = program.opts();

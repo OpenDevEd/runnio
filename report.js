@@ -186,8 +186,7 @@ async function report(id, options, config) {
             listPeopleNotFilled.push(people[i].name);
         }
         if (options.sendwarning) {
-            if (people[i].name == 'XXXXX')
-                await sendWarningEmail(hours, people[i].name, people[i].email, config);
+            await sendWarningEmail(hours, people[i].name, people[i].email, config);
         }
     }
     // console.log(report)
@@ -203,7 +202,7 @@ async function report(id, options, config) {
         // Email data
         const mailOptions = {
             from: config.user,
-            to: 'XXXXXXXXXXXXXXXX', // The recipient's email address
+            to: config.ManagerMail, // The recipient's email address
             subject: 'List of Employees Without Timesheets', // Subject of the email
             text: `Dear Manager,
 
@@ -217,13 +216,13 @@ async function report(id, options, config) {
           Report Bot`,
         };
         console.log(mailOptions)
-        // transporter.sendMail(mailOptions, (error, info) => {
-        //     if (error) {
-        //         console.log('Error sending email:', error);
-        //     } else {
-        //         console.log('Email sent:', info.response);
-        //     }
-        // });
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.log('Error sending email:', error);
+            } else {
+                console.log('Email sent:', info.response);
+            }
+        });
     }
 
     return report
