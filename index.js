@@ -13,16 +13,11 @@ process.on('uncaughtException', (error) => {
   console.log('uncaughtException');
   console.error(error);
 });
-// const axios = require('axios');
 
 const fs = require('fs');
 const { get } = require('lodash');
 const readline = require('readline');
 const { Command } = require('commander');
-//var _ = require('lodash');
-//var { DateTime } = require('luxon');
-//var Sugar = require('sugar');
-//const { exec } = require("child_process");
 
 const confdir = require('os').homedir() + "/.config/runnio-cli/"
 const CONFIG_FILE = confdir + 'config.json';
@@ -38,7 +33,6 @@ program.version('0.0.1');
 program
   .option('-d, --debug', 'debug')
   .option('--quiet', 'do not print output to command line')
-  // .option('--apikey <string>', 'Provide api key as a string')
   .option('--config <file>', 'Provide config file which contains api key')
   .option('--csv', 'Output as CSV')
 
@@ -108,7 +102,7 @@ program
     runner(assignments, id, options)
   });
 
-  program
+program
   .command('report [id...]')
   .option('--sendwarning', 'Send warning email to people who have not filled their timesheet')
   .option('--reportManager', 'Send report to manager')
@@ -116,12 +110,12 @@ program
     runner(report, id, options)
   });
 
-  
+
 program
-.command('cron')
-.action(async (id, options) => {
-  runner(cronFunction, id, options)
-});
+  .command('cron')
+  .action(async (id, options) => {
+    runner(cronFunction, id, options)
+  });
 
 
 const globaloptions = program.opts();
