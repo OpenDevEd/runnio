@@ -85,7 +85,7 @@ program
     runner(actuals, id, options)
   });
 
-  program
+program
   .command('assignments [id...]')
   .option('--get', 'Get assignments')
   .option('--post', 'Post assignments')
@@ -98,7 +98,7 @@ program
   .option('--start_date <startDate>', 'Starting date of the task or project phase')
   .option('--end_date <endDate>', 'Ending date of the task or project phase')
   .option('--minutes_per_day <minutesPerDay>', 'Number of minutes allocated per day', 0)
-  .option('--totaldays <totaldays>', 'Number of days allocated for the task or project phase',0)
+  .option('--totaldays <totaldays>', 'Number of days allocated for the task or project phase', 0)
   .option('--is-billable <isBillable>', 'Indicates if task is billable', /^(true|false)$/i, true)
   .option('--note <note>', 'Additional notes or comments')
   .option('--phase_id <phaseId>', 'Identifier for a specific phase')
@@ -107,8 +107,10 @@ program
     runner(assignments, id, options)
   });
 
-  program
+program
   .command('report [id...]')
+  .option('--sendwarning', 'Send warning email to people who have not filled their timesheet')
+  .option('--reportManager', 'Send report to manager')
   .action(async (id, options) => {
     runner(report, id, options)
   });
@@ -137,58 +139,50 @@ async function runner(fn, id, options) {
 
   try {
     const data = await fn(id, options, config);
-    console.log("data :",data);
-    
-// const data = [
-//   // ... the array of objects you provided ...
-// ];
-let csvWriter=null;
-let stringifiedData =data;
-if(fn.name=="report")
-{
-   csvWriter = createCsvWriter({
-    path: `${fn.name}.csv`,    // Change this to the desired output file path
-    header: [
-      { id: 'name', title: 'Name' },
-      { id: 'hours', title: 'hours' }
-    ]
-  });
-  
-  const records = [];
-  for (const name in data) {
-    records.push({ name, hours: data[name] });
-  }
-  stringifiedData =records
-}
-else
-{
+    console.log("data :", data);
+    if (globaloptions.csv) {
 
- csvWriter = createCsvWriter({
-  path: `${fn.name}.csv`,
-  header: Object.keys(data[0]).map(key => ({ id: key, title: key }))
-});
- stringifiedData = data.map(obj => {
-  const stringifiedObj = {};
-  for (const key in obj) {
-    if (typeof obj[key] === 'object') {
-      stringifiedObj[key] = JSON.stringify(obj[key]);
-    } else {
-      stringifiedObj[key] = obj[key];
+
+      let csvWriter = null;
+      let stringifiedData = data;
+      if (fn.name == "report") {
+        csvWriter = createCsvWriter({
+          path: `${fn.name}.csv`,
+          header: [
+            { id: 'name', title: 'Name' },
+            { id: 'hours', title: 'hours' }
+          ]
+        });
+
+        const records = [];
+        for (const name in data) {
+          records.push({ name, hours: data[name] });
+        }
+        stringifiedData = records
+      }
+      else {
+
+        csvWriter = createCsvWriter({
+          path: `${fn.name}.csv`,
+          header: Object.keys(data[0]).map(key => ({ id: key, title: key }))
+        });
+        stringifiedData = data.map(obj => {
+          const stringifiedObj = {};
+          for (const key in obj) {
+            if (typeof obj[key] === 'object') {
+              stringifiedObj[key] = JSON.stringify(obj[key]);
+            } else {
+              stringifiedObj[key] = obj[key];
+            }
+          }
+          return stringifiedObj;
+        });
+      }
+
+      csvWriter
+        .writeRecords(stringifiedData)
+        .then(() => console.log('CSV file was written successfully.'));
     }
-  }
-  return stringifiedObj;
-});
-}
-
-csvWriter
-  .writeRecords(stringifiedData)
-  .then(() => console.log('CSV file was written successfully.'));
-    //console.log(data.length);
-    // if (globaloptions.csv) {
-    //   console.log("csv output not yet implemented.")
-    // } else {
-    //   console.log(JSON.stringify(data, null, 2));
-    // };
   }
   catch (error) {
     console.error(error);
