@@ -106,12 +106,47 @@ function numberOfWorkingDaysBetween(startDate, endDate) {
     return (end - realStart) / dayMilliseconds - weekendDays;
 }
 
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+function shiftToNextMonday(dateString) {
+    const date = new Date(dateString);
+    const dayOfWeek = date.getDay();
+
+    if (dayOfWeek === 0) { // Sunday
+        date.setDate(date.getDate() + 1); // Shift to Monday
+    } else if (dayOfWeek === 6) { // Saturday
+        date.setDate(date.getDate() + 2); // Shift to Monday
+    }
+    return formatDate(date);
+
+}
+// Function to shift a date to the previous Friday if it's a weekend
+function shiftToPreviousFriday(dateString) {
+  const date = new Date(dateString);
+  const dayOfWeek = date.getDay();
+  
+  if (dayOfWeek === 0) { // Sunday
+    date.setDate(date.getDate() - 2); // Shift to Friday
+  } else if (dayOfWeek === 6) { // Saturday
+    date.setDate(date.getDate() - 1); // Shift to Friday
+  }
+  
+  return formatDate(date);
+}
+
 async function PostAssignments(config, options) {
 
     let minutes_per_day = parseInt(options.minutes_per_day, 10)
     if (options.minutes_per_day && options.totaldays) {
         console.log("Warning: minutes_per_day and totaldays will be added")
     }
+    options.start_date = shiftToNextMonday(options.start_date);
+    options.end_date = shiftToPreviousFriday(options.end_date);
     if (options.totaldays) {
         const durationInWorkingDays = numberOfWorkingDaysBetween(options.start_date, options.end_date)
         const fractionPerWorkingDay = options.totaldays / durationInWorkingDays
@@ -131,13 +166,13 @@ async function PostAssignments(config, options) {
         params.start_date = options.start_date;
     if (options.end_date)
         params.end_date = options.end_date;
-    if(options.is_billable)
+    if (options.is_billable)
         params.is_billable = options.is_billable;
-    if(options.note)
+    if (options.note)
         params.note = options.note;
-    if(options.phase_id)
+    if (options.phase_id)
         params.phase_id = options.phase_id;
-    if(options.non_working_day)
+    if (options.non_working_day)
         params.non_working_day = options.non_working_day;
 
     params.minutes_per_day = minutes_per_day;

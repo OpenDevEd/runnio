@@ -5,6 +5,8 @@ const projects = require('./projects');
 const assignments = require('./assignments');
 const actuals = require('./actuals');
 const report = require('./report');
+const projection = require('./projection');
+const teams = require('./teams');
 const cronFunction = require('./cronFunction');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 
@@ -56,6 +58,8 @@ program
 program
   .command('projects [id...]')
   .description('List of projects. Access to GET /v0/projects and GET /v0/projects/id')
+  .option('--value', 'Get value of project by id')
+  .option('--byteam <string>', 'Get value of projects by team id')
   .option('--no_include_archived', 'Default value : false', false)
   .option('--per_page <number>', 'Number of items to return per page. Maximum value: 200. Default: 200', 200)
   .option('--page <offset>', 'Page offset to fetch. Default value : 1', 1)
@@ -110,12 +114,31 @@ program
     runner(report, id, options)
   });
 
+program
+  .command('projection [id...]')
+  .option('--byteam', 'Projection by team')
+  .option('--start <string>', 'Include only Assignments + Actuals on or after date (YYYY-MM-DD)')
+  .option('--end <string>', 'Include only Assignments + Actuals on or before date (YYYY-MM-DD)')
+  .option('--months <number>', 'Number of months to project', 3)
+  .action(async (id, options) => {
+    runner(projection, id, options)
+  });
+
+program
+ .command('teams [id...]')
+ .description('List of teams. Access to GET /v0/teams and GET /v0/teams/id')
+ .action(async (id, options) => {
+    runner(teams, id, options)
+  });
+
 
 program
   .command('cron')
   .action(async (id, options) => {
     runner(cronFunction, id, options)
   });
+
+
 
 
 const globaloptions = program.opts();
@@ -142,6 +165,11 @@ async function runner(fn, id, options) {
   try {
     const data = await fn(id, options, config);
     console.log("data :", data);
+    //print data in file.json 
+    fs.writeFileSync('file.json', JSON.stringify(data, null, 2));
+
+    // console.log("assignements :", data[0].assignments);
+
     if (globaloptions.csv) {
 
 
